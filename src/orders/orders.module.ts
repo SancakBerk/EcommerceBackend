@@ -1,10 +1,11 @@
-// order/order.module.ts
 import { Module } from '@nestjs/common';
-import { OrderService } from './orders.service';
-import { OrderController } from './orders.controller';
+import { OrdersService } from './orders.service';
+import { OrdersController } from './orders.controller';
+import { FirebaseModule } from '../firebase/firebase.module';
 
 @Module({
-  providers: [OrderService],
-  controllers: [OrderController],
+  imports: [FirebaseModule],
+  controllers: [OrdersController],
+  providers: [OrdersService],
 })
-export class OrderModule {}
+export class OrdersModule {}

@@ -8,57 +8,55 @@ import {
   deleteDoc,
   collection,
 } from 'firebase/firestore';
-import { CreateUserDto, UpdateUserDto } from '../dto/user.dto';
+import { CreateCategoryDto, UpdateCategoryDto } from '../dto/category.dto';
 import { FirebaseService } from '../firebase/firebase.service';
 
 @Injectable()
-export class UsersService {
+export class CategoriesService {
   constructor(private readonly firebaseService: FirebaseService) {}
 
-  async create(createUserDto: CreateUserDto) {
-    const db = this.firebaseService.getFirestore();
-    const userRef = doc(db, 'users', `user_${createUserDto.userId}`);
-    await setDoc(userRef, createUserDto);
-    return createUserDto;
+  async create(createCategoryDto: CreateCategoryDto) {
+    const firestore = this.firebaseService.getFirestore();
+    await setDoc(
+      doc(firestore, 'categories', createCategoryDto.documentId),
+      createCategoryDto,
+    );
+    return createCategoryDto;
   }
 
   async findAll() {
     const firestore = this.firebaseService.getFirestore();
-    const snapshot = await getDocs(collection(firestore, 'users'));
+    const snapshot = await getDocs(collection(firestore, 'categories'));
     return snapshot.docs.map((doc) => doc.data());
   }
 
   async findOne(documentId: string) {
     const firestore = this.firebaseService.getFirestore();
-    const docRef = doc(firestore, 'users', documentId);
+    const docRef = doc(firestore, 'categories', documentId);
     const docSnap = await getDoc(docRef);
     if (!docSnap.exists()) {
-      throw new NotFoundException('Kullanıcı bulunamadı');
+      throw new NotFoundException('Kategori bulunamadı');
     }
     return docSnap.data();
   }
 
-  async update(documentId: string, updateUserDto: UpdateUserDto) {
+  async update(documentId: string, updateCategoryDto: UpdateCategoryDto) {
     const firestore = this.firebaseService.getFirestore();
-    const docRef = doc(firestore, 'users', documentId);
+    const docRef = doc(firestore, 'categories', documentId);
     const docSnap = await getDoc(docRef);
     if (!docSnap.exists()) {
-      throw new NotFoundException('Kullanıcı bulunamadı');
+      throw new NotFoundException('Kategori bulunamadı');
     }
-    await setDoc(
-      docRef,
-      { ...updateUserDto, updatedAt: Date.now() },
-      { merge: true },
-    );
-    return { ...docSnap.data(), ...updateUserDto };
+    await setDoc(docRef, updateCategoryDto, { merge: true });
+    return { ...docSnap.data(), ...updateCategoryDto };
   }
 
   async remove(documentId: string) {
     const firestore = this.firebaseService.getFirestore();
-    const docRef = doc(firestore, 'users', documentId);
+    const docRef = doc(firestore, 'categories', documentId);
     const docSnap = await getDoc(docRef);
     if (!docSnap.exists()) {
-      throw new NotFoundException('Kullanıcı bulunamadı');
+      throw new NotFoundException('Kategori bulunamadı');
     }
     await deleteDoc(docRef);
   }

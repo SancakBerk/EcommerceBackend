@@ -1,17 +1,23 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { FirebaseService } from 'src/firebase/firebase.service'; // Firebase servisi
+import { FirebaseService } from '../firebase/firebase.service';
+import { FirebaseModule } from '../firebase/firebase.module';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
+    FirebaseModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: 'strong-S-E-C-R-E-T-K-E-Y', // Secret key'i buraya tanımlayın
-      signOptions: { expiresIn: '1h' }, // Token süresi
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '1h' },
     }),
   ],
-  providers: [AuthService, FirebaseService],
   controllers: [AuthController],
+  providers: [AuthService, FirebaseService, JwtStrategy],
+  exports: [AuthService],
 })
 export class AuthModule {}

@@ -10,26 +10,26 @@ import {
   query,
   where,
 } from 'firebase/firestore';
-import { CreateOrderDto, UpdateOrderDto } from '../dto/order.dto';
+import { CreateCartItemDto, UpdateCartItemDto } from '../dto/cartItem.dto';
 import { FirebaseService } from '../firebase/firebase.service';
 
 @Injectable()
-export class OrdersService {
+export class CartItemsService {
   constructor(private readonly firebaseService: FirebaseService) {}
 
-  async create(createOrderDto: CreateOrderDto) {
+  async create(createCartItemDto: CreateCartItemDto) {
     const firestore = this.firebaseService.getFirestore();
-    await setDoc(doc(firestore, 'orders', createOrderDto.documentId), {
-      ...createOrderDto,
-      createdAt: new Date(createOrderDto.createdAt),
-    });
-    return createOrderDto;
+    await setDoc(
+      doc(firestore, 'cartItems', createCartItemDto.documentId),
+      createCartItemDto,
+    );
+    return createCartItemDto;
   }
 
   async findByUser(userId: number) {
     const firestore = this.firebaseService.getFirestore();
     const q = query(
-      collection(firestore, 'orders'),
+      collection(firestore, 'cartItems'),
       where('userId', '==', userId),
     );
     const snapshot = await getDocs(q);
@@ -38,38 +38,31 @@ export class OrdersService {
 
   async findOne(documentId: string) {
     const firestore = this.firebaseService.getFirestore();
-    const docRef = doc(firestore, 'orders', documentId);
+    const docRef = doc(firestore, 'cartItems', documentId);
     const docSnap = await getDoc(docRef);
     if (!docSnap.exists()) {
-      throw new NotFoundException('Sipariş bulunamadı');
+      throw new NotFoundException('Sepet öğesi bulunamadı');
     }
     return docSnap.data();
   }
 
-  async update(documentId: string, updateOrderDto: UpdateOrderDto) {
+  async update(documentId: string, updateCartItemDto: UpdateCartItemDto) {
     const firestore = this.firebaseService.getFirestore();
-    const docRef = doc(firestore, 'orders', documentId);
+    const docRef = doc(firestore, 'cartItems', documentId);
     const docSnap = await getDoc(docRef);
     if (!docSnap.exists()) {
-      throw new NotFoundException('Sipariş bulunamadı');
+      throw new NotFoundException('Sepet öğesi bulunamadı');
     }
-    await setDoc(
-      docRef,
-      {
-        ...updateOrderDto,
-        createdAt: docSnap.data().createdAt, // Orijinal createdAt korunur
-      },
-      { merge: true },
-    );
-    return { ...docSnap.data(), ...updateOrderDto };
+    await setDoc(docRef, updateCartItemDto, { merge: true });
+    return { ...docSnap.data(), ...updateCartItemDto };
   }
 
   async remove(documentId: string) {
     const firestore = this.firebaseService.getFirestore();
-    const docRef = doc(firestore, 'orders', documentId);
+    const docRef = doc(firestore, 'cartItems', documentId);
     const docSnap = await getDoc(docRef);
     if (!docSnap.exists()) {
-      throw new NotFoundException('Sipariş bulunamadı');
+      throw new NotFoundException('Sepet öğesi bulunamadı');
     }
     await deleteDoc(docRef);
   }

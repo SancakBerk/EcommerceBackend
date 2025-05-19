@@ -1,19 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { AuthService } from './auth.service';
+import { FirebaseService } from '../firebase/firebase.service';
+import { UserType } from '../types/globalTypes';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private authService: AuthService) {
+  constructor(private readonly firebaseService: FirebaseService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // Bearer token'dan al
-      ignoreExpiration: false, // Token süresi dolmuşsa hata ver
-      secretOrKey: 'secretKey', // Secret key
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: process.env.JWT_SECRET,
     });
   }
 
-  async validate(payload: any) {
-    return this.authService.validateUser(payload); // Token'dan gelen bilgiyi kontrol et
+  async validate(payload: { uid: number; email: string }): Promise<UserType> {
+    const user = await this.firebaseService.getUser(payload.uid);
+    if (!user) {
+      throw new UnauthorizedException('Geçersiz kullanıcı');
+    }
+    return user;
   }
 }

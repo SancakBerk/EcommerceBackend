@@ -1,18 +1,11 @@
-import { Controller, Post, Body, Get } from '@nestjs/common';
-import { ProductService } from './products.service';
-import { CreateProductDto } from './dto/create-product.dto';
+import { Module } from '@nestjs/common';
+import { ProductsService } from './products.service';
+import { ProductsController } from './products.controller';
+import { FirebaseModule } from '../firebase/firebase.module';
 
-@Controller('products')
-export class ProductController {
-  constructor(private readonly productService: ProductService) {}
-
-  @Post()
-  add(@Body() dto: CreateProductDto) {
-    return this.productService.addProduct(dto);
-  }
-
-  @Get()
-  list() {
-    return this.productService.listProducts();
-  }
-}
+@Module({
+  imports: [FirebaseModule],
+  controllers: [ProductsController],
+  providers: [ProductsService],
+})
+export class ProductsModule {}

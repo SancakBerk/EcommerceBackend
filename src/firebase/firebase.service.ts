@@ -39,7 +39,6 @@ export class FirebaseService {
     email: string,
     password: string,
   ): Promise<UserType | null> {
-    // Firebase Authentication yerine basit bir kontrol (gerçek projede Auth kullanın)
     const snapshot = await getDocs(collection(this.firestore, 'users'));
     const user = snapshot.docs.find((doc) => doc.data().email === email);
     if (!user) return null;

@@ -5,7 +5,8 @@ export class CreateOngoingItemDto {
   itemId: number;
 
   @IsString()
-  documentId: string;
+  @IsOptional() // documentId artık opsiyonel
+  documentId?: string;
 
   @IsString()
   title: string;

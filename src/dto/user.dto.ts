@@ -1,80 +1,42 @@
-import {
-  IsString,
-  IsNumber,
-  IsOptional,
-  IsEmail,
-  IsEnum,
-} from 'class-validator';
+import { IsInt, IsString, IsEmail, IsOptional } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
-  @IsNumber()
-  userId: number;
-
-  @IsString()
-  documentId: string;
-
   @IsEmail()
   email: string;
 
   @IsString()
-  firstName: string;
+  password: string;
 
+  @IsOptional()
   @IsString()
-  lastName: string;
-
-  @IsString()
-  @IsOptional()
-  phone?: string;
-
-  @IsOptional()
-  address?: {
-    street: string;
-    city: string;
-    country: string;
-    postalCode: string;
-  };
-
-  @IsNumber()
-  createdAt: number;
-
-  @IsNumber()
-  @IsOptional()
-  updatedAt?: number;
-
-  @IsEnum(['user', 'admin'])
-  role: 'user' | 'admin';
+  name?: string;
 }
-
 export class UpdateUserDto {
-  @IsString()
+  @IsEmail()
   @IsOptional()
+  @ApiProperty({
+    description: 'Güncellenecek e-posta adresi',
+    example: 'new.email@example.com',
+    required: false,
+  })
   email?: string;
 
   @IsString()
   @IsOptional()
-  firstName?: string;
+  @ApiProperty({
+    description: 'Güncellenecek parola',
+    example: 'NewPassword123',
+    required: false,
+  })
+  password?: string;
 
   @IsString()
   @IsOptional()
-  lastName?: string;
-
-  @IsString()
-  @IsOptional()
-  phone?: string;
-
-  @IsOptional()
-  address?: {
-    street: string;
-    city: string;
-    country: string;
-    postalCode: string;
-  };
-
-  @IsNumber()
-  @IsOptional()
-  updatedAt?: number;
-
-  @IsEnum(['user', 'admin'])
-  @IsOptional()
-  role?: 'user' | 'admin';
+  @ApiProperty({
+    description: 'Güncellenecek kullanıcı adı',
+    example: 'Ayşe Yeni',
+    required: false,
+  })
+  name?: string;
 }

@@ -32,17 +32,16 @@ export type ProductType = {
   averageStars: number;
 };
 
-export type CategoryType = {
+export interface categoryType {
   categoryId: number;
-  documentId: string;
+  documentId?: string; // Opsiyonel
   name: string;
   slug: string;
-  subCategories?: CategoryType[];
+  subCategories?: categoryType[];
   imageUrl: string;
   description?: string;
   parentId?: number;
-};
-
+}
 export type CartItemType = {
   cartItemId: number;
   documentId: string;

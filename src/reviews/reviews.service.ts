@@ -9,6 +9,7 @@ import {
   collection,
   query,
   where,
+  addDoc,
 } from 'firebase/firestore';
 import {
   CreateProductReviewDto,
@@ -16,17 +17,39 @@ import {
 } from '../dto/review.dto';
 import { FirebaseService } from '../firebase/firebase.service';
 
+// DTO'yu düz objeye dönüştüren yardımcı fonksiyon
+function toPlainObject(dto: any): any {
+  const plainObject = { ...dto };
+  if (plainObject.reviewReplies) {
+    plainObject.reviewReplies = plainObject.reviewReplies.map((reply: any) =>
+      toPlainObject(reply),
+    );
+  }
+  plainObject.reviewDate = new Date(dto.reviewDate); // Tarih dönüştürme
+  delete plainObject.documentId; // documentId'yi kaldır
+  return plainObject;
+}
+
 @Injectable()
 export class ReviewsService {
   constructor(private readonly firebaseService: FirebaseService) {}
 
   async create(createProductReviewDto: CreateProductReviewDto) {
     const firestore = this.firebaseService.getFirestore();
-    await setDoc(doc(firestore, 'reviews', createProductReviewDto.documentId), {
+
+    // DTO'yu düz objeye dönüştür
+    const reviewData = toPlainObject(createProductReviewDto);
+
+    // addDoc ile otomatik ID oluştur
+    const docRef = await addDoc(collection(firestore, 'reviews'), reviewData);
+
+    // Oluşturulan documentId'yi ekle
+    const createdReview = {
       ...createProductReviewDto,
-      reviewDate: new Date(createProductReviewDto.reviewDate),
-    });
-    return createProductReviewDto;
+      documentId: docRef.id,
+    };
+
+    return createdReview;
   }
 
   async findByProduct(productId: number) {
@@ -36,7 +59,7 @@ export class ReviewsService {
       where('productId', '==', productId),
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => doc.data());
+    return snapshot.docs.map((doc) => ({ documentId: doc.id, ...doc.data() }));
   }
 
   async findOne(documentId: string) {
@@ -46,7 +69,7 @@ export class ReviewsService {
     if (!docSnap.exists()) {
       throw new NotFoundException('Yorum bulunamadı');
     }
-    return docSnap.data();
+    return { documentId: docSnap.id, ...docSnap.data() };
   }
 
   async update(
@@ -59,17 +82,17 @@ export class ReviewsService {
     if (!docSnap.exists()) {
       throw new NotFoundException('Yorum bulunamadı');
     }
-    await setDoc(
-      docRef,
-      {
-        ...updateProductReviewDto,
-        reviewDate: updateProductReviewDto.reviewDate
-          ? new Date(updateProductReviewDto.reviewDate)
-          : docSnap.data().reviewDate,
-      },
-      { merge: true },
-    );
-    return { ...docSnap.data(), ...updateProductReviewDto };
+
+    // DTO'yu düz objeye dönüştür
+    const reviewData = toPlainObject(updateProductReviewDto);
+
+    // Orijinal reviewDate korunur, eğer yeni tarih verilmediyse
+    reviewData.reviewDate = updateProductReviewDto.reviewDate
+      ? new Date(updateProductReviewDto.reviewDate)
+      : docSnap.data().reviewDate;
+
+    await setDoc(docRef, reviewData, { merge: true });
+    return { documentId, ...docSnap.data(), ...updateProductReviewDto };
   }
 
   async remove(documentId: string) {

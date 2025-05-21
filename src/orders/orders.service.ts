@@ -9,9 +9,27 @@ import {
   collection,
   query,
   where,
+  addDoc,
 } from 'firebase/firestore';
 import { CreateOrderDto, UpdateOrderDto } from '../dto/order.dto';
 import { FirebaseService } from '../firebase/firebase.service';
+
+// DTO'yu düz objeye dönüştüren yardımcı fonksiyon
+function toPlainObject(dto: any): any {
+  const plainObject = { ...dto };
+  if (plainObject.items) {
+    plainObject.items = plainObject.items.map((item: any) => ({
+      ...item,
+      product: item.product ? { ...item.product } : item.product,
+    }));
+  }
+  if (plainObject.shippingAddress) {
+    plainObject.shippingAddress = { ...plainObject.shippingAddress };
+  }
+  plainObject.createdAt = new Date(dto.createdAt); // Tarih dönüştürme
+  delete plainObject.documentId; // documentId'yi kaldır
+  return plainObject;
+}
 
 @Injectable()
 export class OrdersService {
@@ -19,11 +37,20 @@ export class OrdersService {
 
   async create(createOrderDto: CreateOrderDto) {
     const firestore = this.firebaseService.getFirestore();
-    await setDoc(doc(firestore, 'orders', createOrderDto.documentId), {
+
+    // DTO'yu düz objeye dönüştür
+    const orderData = toPlainObject(createOrderDto);
+
+    // addDoc ile otomatik ID oluştur
+    const docRef = await addDoc(collection(firestore, 'orders'), orderData);
+
+    // Oluşturulan documentId'yi ekle
+    const createdOrder = {
       ...createOrderDto,
-      createdAt: new Date(createOrderDto.createdAt),
-    });
-    return createOrderDto;
+      documentId: docRef.id,
+    };
+
+    return createdOrder;
   }
 
   async findByUser(userId: number) {
@@ -33,7 +60,7 @@ export class OrdersService {
       where('userId', '==', userId),
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => doc.data());
+    return snapshot.docs.map((doc) => ({ documentId: doc.id, ...doc.data() }));
   }
 
   async findOne(documentId: string) {
@@ -43,7 +70,7 @@ export class OrdersService {
     if (!docSnap.exists()) {
       throw new NotFoundException('Sipariş bulunamadı');
     }
-    return docSnap.data();
+    return { documentId: docSnap.id, ...docSnap.data() };
   }
 
   async update(documentId: string, updateOrderDto: UpdateOrderDto) {
@@ -53,15 +80,15 @@ export class OrdersService {
     if (!docSnap.exists()) {
       throw new NotFoundException('Sipariş bulunamadı');
     }
-    await setDoc(
-      docRef,
-      {
-        ...updateOrderDto,
-        createdAt: docSnap.data().createdAt, // Orijinal createdAt korunur
-      },
-      { merge: true },
-    );
-    return { ...docSnap.data(), ...updateOrderDto };
+
+    // DTO'yu düz objeye dönüştür
+    const orderData = toPlainObject(updateOrderDto);
+
+    // Orijinal createdAt korunur
+    orderData.createdAt = docSnap.data().createdAt;
+
+    await setDoc(docRef, orderData, { merge: true });
+    return { documentId, ...docSnap.data(), ...updateOrderDto };
   }
 
   async remove(documentId: string) {

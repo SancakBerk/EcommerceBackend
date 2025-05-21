@@ -5,7 +5,8 @@ export class CreateProductReviewDto {
   reviewId: number;
 
   @IsString()
-  documentId: string;
+  @IsOptional() // documentId artık opsiyonel
+  documentId?: string;
 
   @IsNumber()
   productId: number;

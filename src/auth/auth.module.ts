@@ -12,7 +12,7 @@ import { JwtStrategy } from './jwt.strategy';
     FirebaseModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: process.env.JWT_SECRET,
+      secret: process.env.JWT_SECRET || 'mysecretkey',
       signOptions: { expiresIn: '1h' },
     }),
   ],

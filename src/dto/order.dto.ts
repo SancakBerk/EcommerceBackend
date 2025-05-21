@@ -12,7 +12,8 @@ export class CreateOrderDto {
   orderId: number;
 
   @IsString()
-  documentId: string;
+  @IsOptional() // documentId artık opsiyonel
+  documentId?: string;
 
   @IsNumber()
   userId: number;

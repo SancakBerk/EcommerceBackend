@@ -7,6 +7,7 @@ import {
   getDocs,
   deleteDoc,
   collection,
+  addDoc,
 } from 'firebase/firestore';
 import { CreateUserDto, UpdateUserDto } from '../dto/user.dto';
 import { FirebaseService } from '../firebase/firebase.service';
@@ -17,15 +18,21 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     const db = this.firebaseService.getFirestore();
-    const userRef = doc(db, 'users', `user_${createUserDto.userId}`);
-    await setDoc(userRef, createUserDto);
-    return createUserDto;
+    const usersRef = collection(db, 'users');
+    const newUser = {
+      email: createUserDto.email,
+      password: createUserDto.password,
+      name: createUserDto.name || null, // name opsiyonel, yoksa null olacak
+      createdAt: Date.now(),
+    };
+    const docRef = await addDoc(usersRef, newUser);
+    return { id: docRef.id, ...newUser }; // Otomatik oluşturulan ID ile dön
   }
 
   async findAll() {
     const firestore = this.firebaseService.getFirestore();
     const snapshot = await getDocs(collection(firestore, 'users'));
-    return snapshot.docs.map((doc) => doc.data());
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   }
 
   async findOne(documentId: string) {
@@ -35,7 +42,7 @@ export class UsersService {
     if (!docSnap.exists()) {
       throw new NotFoundException('Kullanıcı bulunamadı');
     }
-    return docSnap.data();
+    return { id: docSnap.id, ...docSnap.data() };
   }
 
   async update(documentId: string, updateUserDto: UpdateUserDto) {
@@ -50,7 +57,7 @@ export class UsersService {
       { ...updateUserDto, updatedAt: Date.now() },
       { merge: true },
     );
-    return { ...docSnap.data(), ...updateUserDto };
+    return { id: docSnap.id, ...docSnap.data(), ...updateUserDto };
   }
 
   async remove(documentId: string) {

@@ -5,7 +5,8 @@ export class CreateCategoryDto {
   categoryId: number;
 
   @IsString()
-  documentId: string;
+  @IsOptional() // documentId artık opsiyonel
+  documentId?: string;
 
   @IsString()
   name: string;

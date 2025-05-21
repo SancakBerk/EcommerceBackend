@@ -1,4 +1,4 @@
-import { IsNumber, IsString, IsObject, IsOptional } from 'class-validator';
+import { IsNumber, IsObject, IsString, IsOptional } from 'class-validator';
 import { CreateProductDto } from './product.dto';
 
 export class CreateCartItemDto {
@@ -6,7 +6,8 @@ export class CreateCartItemDto {
   cartItemId: number;
 
   @IsString()
-  documentId: string;
+  @IsOptional() // documentId artık opsiyonel
+  documentId?: string;
 
   @IsNumber()
   userId: number;

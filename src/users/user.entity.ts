@@ -1,6 +1,6 @@
-// src/users/user.entity.ts
 export class User {
-  uid: string;
-  email?: string;
-  displayName?: string;
+  userId: number;
+  email: string;
+  password: string;
+  name: string;
 }

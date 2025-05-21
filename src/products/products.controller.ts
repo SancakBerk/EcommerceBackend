@@ -29,24 +29,24 @@ export class ProductsController {
     return this.productsService.findAll();
   }
 
-  @Get(':documentId')
-  async findOne(@Param('documentId') documentId: string) {
-    return this.productsService.findOne(documentId);
+  @Get(':productId')
+  async findOne(@Param('productId') productId: string) {
+    return this.productsService.findOne(productId);
   }
 
-  @Put(':documentId')
+  @Put(':productId')
   @UseGuards(JwtAuthGuard)
   async update(
-    @Param('documentId') documentId: string,
+    @Param('productId') productId: string,
     @Body() updateProductDto: UpdateProductDto,
   ) {
-    return this.productsService.update(documentId, updateProductDto);
+    return this.productsService.update(productId, updateProductDto);
   }
 
-  @Delete(':documentId')
+  @Delete(':productId')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('documentId') documentId: string) {
-    return this.productsService.remove(documentId);
+  async remove(@Param('productId') productId: string) {
+    return this.productsService.remove(productId);
   }
 }

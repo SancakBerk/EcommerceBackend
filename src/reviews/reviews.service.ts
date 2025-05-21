@@ -59,6 +59,9 @@ export class ReviewsService {
       where('productId', '==', productId),
     );
     const snapshot = await getDocs(q);
+    if (snapshot.empty) {
+      return []; // Boş liste döndür
+    }
     return snapshot.docs.map((doc) => ({ documentId: doc.id, ...doc.data() }));
   }
 

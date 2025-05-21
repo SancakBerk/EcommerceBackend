@@ -2,7 +2,7 @@ import { IsString, IsNumber, IsOptional, IsArray } from 'class-validator';
 
 export class CreateProductDto {
   @IsNumber()
-  productId: number;
+  productId: string;
 
   @IsString()
   documentId: string;
@@ -45,6 +45,10 @@ export class CreateProductDto {
 }
 
 export class UpdateProductDto {
+  @IsString()
+  @IsOptional()
+  productId?: string; // String olarak tanımlı
+
   @IsString()
   @IsOptional()
   name?: string;

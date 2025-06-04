@@ -24,7 +24,7 @@ export class AuthService {
   async login(
     email: string,
     password: string,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<{ accessToken: string, userId: string }> {
     const user = await this.validateUser(email, password);
     if (!user) {
       throw new UnauthorizedException('Giriş başarısız');
@@ -32,6 +32,7 @@ export class AuthService {
     const payload = { email: user.email, uid: user.userId };
     return {
       accessToken: this.jwtService.sign(payload),
+      userId: user.userId,
     };
   }
 }
